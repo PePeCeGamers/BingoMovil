@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo - Pantalla Móvil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; display: flex; font-family: Arial, sans-serif; background-color: #f0f0f0; overflow: hidden; }
+        #contenedor-principal { display: flex; flex-direction: column; width: 100%; height: 100%; }
+        #numero-container { display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #3f045a; color: white; flex: 1; position: relative; }
+        .bolilla { width: 50vw; height: 50vw; background-color: white; color: black; font-size: 25vw; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 5px solid black; position: relative; }
+        .parpadeo { animation: parpadear 1s infinite alternate; }
+        @keyframes parpadear { from { background-color: yellow; } to { background-color: white; } }
+        #letra-container { position: absolute; top: 10%; font-size: 10vw; font-weight: bold; color: #8B0000; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
+        #input-container { margin-top: 20px; display: flex; gap: 10px; width: 90%; justify-content: center; }
+        #numero-input { padding: 10px; font-size: 1.2rem; text-align: center; width: 50px; border-radius: 5px; border: 2px solid black; }
+        button { padding: 8px 15px; font-size: 1rem; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 10px; }
+        #boton-sonido { font-size: 1.5rem; background-color: transparent; border: none; cursor: pointer; z-index: 10; }
+        #tablero-container { display: none; justify-content: center; flex-direction: column; background-color: #800080; padding: 10px; flex: 1; overflow-y: auto; height: 50%; position: relative; }
+        #tablero { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; width: 100%; }
+        .celda-tablero { display: flex; justify-content: center; align-items: center; font-size: 1rem; font-weight: bold; background-color: white; color: lightgray; border-radius: 10px; border: 2px solid black; padding: 5px; }
+        .letra-columna { background-color: black; color: white; font-size: 1.2rem; cursor: pointer; }
+        .letra-columna#boton-regresar { background-color: #007bff; } /* Fondo azul para el botón "B" */
+        .numero-activo { color: black !important; background-color: yellow !important; }
+        #historial-container { display: flex; justify-content: center; align-items: center; margin-top: 20px; width: 100%; padding: 0 10%; }
+        .bola-pequeña { width: 10vh; height: 10vh; background-color: white; color: black; font-size: 3vh; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 5px solid black; margin: 0 5px; }
+        #firma { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-family: 'Press Start 2P', sans-serif; font-size: 1.5rem; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); text-align: center; }
+        #firma-tablero { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-family: 'Press Start 2P', sans-serif; font-size: 1rem; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); text-align: center; white-space: nowrap; } /* Firma en el tablero con letra más pequeña y en una línea */
+        #boton-reset { margin-top: 30px; background-color: #dc3545; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: none; cursor: pointer; color: white; line-height: 60px; }
+        .encabezado-tablero { grid-column: span 5; text-align: center; font-size: 1.5rem; font-weight: bold; color: white; background-color: #800080; padding: 10px; }
+        .contenido-bolilla { display: flex; align-items: center; gap: 5px; }
+        .letra-bolilla { color: #8B0000; font-size: 0.6em; }
+        .numero-bolilla { color: black; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Íconos de FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="contenedor-principal">
+        <!-- Sección de las bolillas -->
+        <div id="numero-container">
+            <div class="bolilla" id="numero">
+                <div class="contenido-bolilla">
+                    <span class="letra-bolilla" id="letra-bolilla"></span>
+                    <span class="numero-bolilla" id="numero-bolilla">0</span>
+                </div>
+            </div>
+            <button id="boton-sonido">🔇</button>
+            <div id="historial-container">
+                <div class="bola-pequeña" id="bola1">
+                    <div class="contenido-bolilla">
+                        <span class="letra-bolilla"></span>
+                        <span class="numero-bolilla">0</span>
+                    </div>
+                </div>
+                <div class="bola-pequeña" id="bola2">
+                    <div class="contenido-bolilla">
+                        <span class="letra-bolilla"></span>
+                        <span class="numero-bolilla">0</span>
+                    </div>
+                </div>
+                <div class="bola-pequeña" id="bola3">
+                    <div class="contenido-bolilla">
+                        <span class="letra-bolilla"></span>
+                        <span class="numero-bolilla">0</span>
+                    </div>
+                </div>
+            </div>
+            <div id="input-container">
+                <button id="boton-ingresar">Ingresar</button>
+                <input type="number" id="numero-input" min="1" max="75">
+                <button id="boton-aleatorio">Aleatorio</button>
+                <button id="boton-repetir">Repetir</button>
+            </div>
+            <button id="boton-reset">Reset</button>
+            <div id="firma">Creado por PPCGAMERS</div>
+        </div>
+
+        <!-- Botón para mostrar el tablero -->
+        <button id="boton-tablero" style="position: absolute; top: 10px; left: 10px; background-color: transparent; border: none; font-size: 2rem; cursor: pointer; color: white;">
+            <i class="fas fa-calendar-alt"></i> <!-- Ícono de calendario -->
+        </button>
+
+        <!-- Sección del tablero de control (inicialmente oculto) -->
+        <div id="tablero-container">
+            <div id="tablero">
+                <div class="encabezado-tablero">Tablero de Control</div>
+                <div class="celda-tablero letra-columna" id="boton-regresar">B</div>
+                <div class="celda-tablero letra-columna">I</div>
+                <div class="celda-tablero letra-columna">N</div>
+                <div class="celda-tablero letra-columna">G</div>
+                <div class="celda-tablero letra-columna">O</div>
+            </div>
+            <!-- Firma en el tablero de control -->
+            <div id="firma-tablero">Creado por PPCGAMERS</div>
+        </div>
+    </div>
+
+    <script>
+        let numerosIngresados = [];
+        let sonidoActivado = false;
+        let ultimoNumero = null;
+        let numerosDisponibles = Array.from({ length: 75 }, (_, i) => i + 1); // Lista de números disponibles
+
+        function obtenerLetra(numero) {
+            const rangos = {
+                "B": [1, 15],
+                "I": [16, 30],
+                "N": [31, 45],
+                "G": [46, 60],
+                "O": [61, 75]
+            };
+
+            for (let letra in rangos) {
+                if (numero >= rangos[letra][0] && numero <= rangos[letra][1]) {
+                    return letra;
+                }
+            }
+            return "";
+        }
+
+        function actualizarNumero(numero) {
+            if (!numerosIngresados.includes(numero)) {
+                numerosIngresados.push(numero);
+                numerosDisponibles = numerosDisponibles.filter(n => n !== numero); // Eliminar el número de la lista de disponibles
+                let bolilla = document.getElementById("numero-bolilla");
+                bolilla.textContent = numero;
+                document.getElementById("numero").classList.add("parpadeo");
+                setTimeout(() => document.getElementById("numero").classList.remove("parpadeo"), 2000);
+
+                let letra = obtenerLetra(numero);
+                document.getElementById("letra-bolilla").textContent = letra;
+
+                actualizarTablero();
+                actualizarHistorial();
+                ultimoNumero = numero;
+
+                if (sonidoActivado) {
+                    let mensaje = new SpeechSynthesisUtterance(`${letra} ${numero}`);
+                    window.speechSynthesis.speak(mensaje);
+                }
+            }
+        }
+
+        function actualizarTablero() {
+            const tablero = document.getElementById("tablero");
+            const celdasExistentes = document.querySelectorAll(".celda-tablero:not(.letra-columna)");
+            celdasExistentes.forEach(celda => celda.remove());
+
+            const numerosPorColumna = [
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+                [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45],
+                [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+                [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+            ];
+
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 5; j++) {
+                    const numero = numerosPorColumna[j][i];
+                    const celda = document.createElement("div");
+                    celda.classList.add("celda-tablero");
+                    if (numerosIngresados.includes(numero)) {
+                        celda.classList.add("numero-activo");
+                    }
+                    celda.textContent = numero;
+                    tablero.appendChild(celda);
+                }
+            }
+        }
+
+        function actualizarHistorial() {
+            const historial = document.querySelectorAll(".bola-pequeña");
+            const historialArray = Array.from(historial);
+            for (let i = historialArray.length - 1; i > 0; i--) {
+                const prevBola = historialArray[i - 1];
+                if (prevBola) {
+                    historialArray[i].querySelector(".numero-bolilla").textContent = prevBola.querySelector(".numero-bolilla").textContent;
+                    historialArray[i].querySelector(".letra-bolilla").textContent = prevBola.querySelector(".letra-bolilla").textContent;
+                }
+            }
+            if (ultimoNumero !== null) {
+                historialArray[0].querySelector(".numero-bolilla").textContent = ultimoNumero;
+                historialArray[0].querySelector(".letra-bolilla").textContent = obtenerLetra(ultimoNumero);
+            }
+        }
+
+        function resetearJuego() {
+            numerosIngresados = [];
+            numerosDisponibles = Array.from({ length: 75 }, (_, i) => i + 1); // Restablecer la lista de números disponibles
+            ultimoNumero = null;
+            document.getElementById("numero-bolilla").textContent = "0";
+            document.getElementById("letra-bolilla").textContent = "";
+            document.querySelectorAll(".bola-pequeña .numero-bolilla").forEach(bola => bola.textContent = "0");
+            document.querySelectorAll(".bola-pequeña .letra-bolilla").forEach(bola => bola.textContent = "");
+            actualizarTablero();
+        }
+
+        // Listeners para los botones
+        document.getElementById("boton-ingresar").addEventListener("click", () => {
+            let numero = parseInt(document.getElementById("numero-input").value);
+            if (numero >= 1 && numero <= 75) {
+                actualizarNumero(numero);
+                document.getElementById("numero-input").value = "";
+            }
+        });
+
+        document.getElementById("boton-aleatorio").addEventListener("click", () => {
+            if (numerosDisponibles.length > 0) {
+                const indiceAleatorio = Math.floor(Math.random() * numerosDisponibles.length);
+                const numeroAleatorio = numerosDisponibles[indiceAleatorio];
+                actualizarNumero(numeroAleatorio);
+            } else {
+                alert("¡Todos los números han sido sorteados!");
+            }
+        });
+
+        document.getElementById("boton-sonido").addEventListener("click", () => {
+            sonidoActivado = !sonidoActivado;
+            document.getElementById("boton-sonido").textContent = sonidoActivado ? "🔊" : "🔇";
+        });
+
+        // Mostrar tablero y ocultar botón de mostrar tablero
+        document.getElementById("boton-tablero").addEventListener("click", () => {
+            document.getElementById("tablero-container").style.display = "flex"; // Muestra el tablero
+            document.getElementById("numero-container").style.display = "none"; // Oculta la vista principal
+            document.getElementById("boton-tablero").style.display = "none"; // Oculta el botón de mostrar tablero
+        });
+
+        // Regresar a la vista principal y mostrar el botón de mostrar tablero
+        document.getElementById("boton-regresar").addEventListener("click", () => {
+            document.getElementById("tablero-container").style.display = "none"; // Oculta el tablero
+            document.getElementById("numero-container").style.display = "flex"; // Muestra la vista principal
+            document.getElementById("boton-tablero").style.display = "block"; // Muestra el botón de mostrar tablero
+        });
+
+        document.getElementById("boton-repetir").addEventListener("click", () => {
+            if (ultimoNumero !== null) {
+                actualizarNumero(ultimoNumero);
+                if (sonidoActivado) {
+                    let letra = obtenerLetra(ultimoNumero);
+                    let mensaje = new SpeechSynthesisUtterance(`${letra} ${ultimoNumero}`);
+                    window.speechSynthesis.speak(mensaje);
+                }
+            }
+        });
+
+        document.getElementById("boton-reset").addEventListener("click", resetearJuego);
+    </script>
+</body>
+</html>
